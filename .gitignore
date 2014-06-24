@@ -5,3 +5,5 @@ obj
 *.PublishSettings
 PublishProfiles
 Scripts-Built
+*.js
+*.js.map
