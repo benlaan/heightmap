@@ -3,19 +3,37 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Voronai</title>
+    <title>Map Generators</title>
     <link rel="stylesheet" href="app.css" type="text/css" />
     <script src="cell.js"></script>
     <script src="voronaiGenerator.js"></script>
+    <script src="heightMapGenerator.js"></script>
     <script src="program.js"></script>
 </head>
 <body>
-    <h1>Voronai</h1>
+    <h1>Map Generator</h1>
 
-    <input type="text" id="pointCount" value="50" />
-    <input type="button" id="refresh" value="Refresh" />
+    <span>
+        <label>Size</label>
+        <input type="text" id="size" value="256" />
+    </span>
+    <span>
+        <label>Roughness</label>
+        <input type="text" id="roughness" value="10" />
+    </span>
+    <span>
+        <label>Water</label>
+        <input type="text" id="level" value="0" />
+    </span>
+    <span>
+        <label>Smooth</label>
+        <input type="checkbox" id="smooth" value="checked" />
+    </span>
+    <span>
+        <input type="button" id="refresh" value="Refresh" />
+    </span>
     <br />
     <br />
-    <canvas id="content" width="1000" height="500"></canvas>
+    <canvas id="content" width="512" height="512"></canvas>
 </body>
 </html>

@@ -24,6 +24,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="program.ts" />
     <TypeScriptCompile Include="cell.ts" />
+    <TypeScriptCompile Include="heightMapGenerator.ts" />
     <TypeScriptCompile Include="voronaiGenerator.ts" />
   </ItemGroup>
   <ItemGroup>

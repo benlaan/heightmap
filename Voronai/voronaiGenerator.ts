@@ -27,7 +27,6 @@
             var px: number = point.X;
             var py: number = point.Y;
 
-            //var distance = Math.abs(px - x) + Math.abs(py - y);
             var distance = Math.sqrt(Math.pow(px - x, 2) + Math.pow(py - y, 2));
 
             if (distance < closest.distance) {
@@ -54,6 +53,18 @@
         return false;
     }
 
+    private dumpPoints(): void {
+
+        var log = <HTMLTextAreaElement>document.getElementById('log');
+
+        log.value = "";
+        for (var p in this._pointCells) {
+
+            var point = this._pointCells[p];
+            log.value += point.X + " " + point.Y + "\n";
+        }
+    }
+
     public init(points: number) {
 
         this._points = points;
@@ -73,6 +84,8 @@
 
             this._pointCells[key] = { X: px, Y: py };
         }
+
+        this.dumpPoints();
 
         for (var y = 0; y < this._height; y++) {
 
