@@ -21,21 +21,27 @@ class Program {
         );
     }
 
-    private static getInput(id: string): HTMLInputElement {
+    private static getElement<T extends HTMLElement>(id: string): T {
 
-        return <HTMLInputElement>document.getElementById(id);
+        return <T>document.getElementById(id);
     }
 
     public static main() {
 
-        this._size      = this.getInput('size');
-        this._roughness = this.getInput('roughness');
-        this._smooth    = this.getInput('smooth');
-        this._level     = this.getInput('level');
+        var parameters = this.getElement<HTMLDivElement>('parameters');
+
+        var map = this.getElement<HTMLCanvasElement>('content');
+        map.width = window.innerWidth - 20;                             // *magic* number!!
+        map.height = window.innerHeight - parameters.offsetHeight - 50; // *magic* number!!
+
+        this._size      = this.getElement<HTMLInputElement>('size');
+        this._roughness = this.getElement<HTMLInputElement>('roughness');
+        this._smooth    = this.getElement<HTMLInputElement>('smooth');
+        this._level     = this.getElement<HTMLInputElement>('level');
 
         //this._voronai = new VoronaiGenerator("content", 80, 160);
 
-        var refresh = this.getInput('refresh');
+        var refresh = this.getElement<HTMLInputElement>('refresh');
         refresh.onclick = e => this.reload();
 
         this.reload();

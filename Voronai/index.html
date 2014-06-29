@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Map Generators</title>
+    <title>Map Generator</title>
     <link rel="stylesheet" href="app.css" type="text/css" />
     <script src="cell.js"></script>
     <script src="voronaiGenerator.js"></script>
@@ -11,29 +11,29 @@
     <script src="program.js"></script>
 </head>
 <body>
-    <h1>Map Generator</h1>
+    <div id="parameters">
+        <h3>Map Generator</h3>
 
-    <span>
-        <label>Size</label>
-        <input type="text" id="size" value="256" />
-    </span>
-    <span>
-        <label>Roughness</label>
-        <input type="text" id="roughness" value="10" />
-    </span>
-    <span>
-        <label>Water</label>
-        <input type="text" id="level" value="0" />
-    </span>
-    <span>
-        <label>Smooth</label>
-        <input type="checkbox" id="smooth" value="checked" />
-    </span>
-    <span>
-        <input type="button" id="refresh" value="Refresh" />
-    </span>
-    <br />
-    <br />
-    <canvas id="content" width="512" height="512"></canvas>
+        <span>
+            <label>Size</label>
+            <input type="text" id="size" value="256" />
+        </span>
+        <span>
+            <label>Roughness</label>
+            <input type="text" id="roughness" value="5" title="Land mass detail level - low is flatter, smoother, higher is more mountainous. Range is 0 to 20" />
+        </span>
+        <span>
+            <label>Water</label>
+            <input type="text" id="level" value="0" title="Perecentage difference from the normal (30%) water level. Range is -20 to 40" />
+        </span>
+        <span>
+            <label>Smooth</label>
+            <input type="checkbox" id="smooth" value="checked" title="Adds erosion for less jaggard terrain" />
+        </span>
+        <span>
+            <input type="button" id="refresh" value="Refresh" />
+        </span>
+    </div>
+    <canvas id="content" style="margin-top: 20px"></canvas>
 </body>
 </html>

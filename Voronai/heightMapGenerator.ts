@@ -72,7 +72,7 @@
         private _water: number;
 
         private _mapSize: number;
-        private _data: number[];
+        private _data: Float64Array;
         private _element: HTMLCanvasElement;
 
         private _colorMap;
@@ -101,7 +101,8 @@
             this._roughness = roughness;
             this._water = water;
 
-            this._data = new Array(size * size);
+            this._data = new Float64Array(size * size);
+
             this._mapSize = size;
 
             this.initialiseCorners();
@@ -123,7 +124,7 @@
             return this._data[this.getIndex(point)];
         }
 
-        private clamp(value): number {
+        private clamp(value: number): number {
 
             if (value > 1)
                 return 1;
@@ -136,7 +137,8 @@
 
         private setValue(point: Point, value: number): void {
 
-            this._data[this.getIndex(point)] = this.clamp(value);
+            var index = this.getIndex(point);
+            this._data[index] = this.clamp(value);
         }
 
         private displace(value: number): number {
@@ -193,12 +195,6 @@
             return "rgb(" + colorFill.r + ", " + colorFill.g + ", " + colorFill.b + ")"
         }
 
-        private getStyle(value: number): string {
-
-            return this.getTerrainStyle(value);
-            // return "hsl(" + ((value - 0) * 360) + ", 50%, 50%)";
-        }
-
         private getAverage(points: Point[]): number {
 
             if (points.length == 0)
@@ -214,32 +210,15 @@
 
         private initialiseCorners() {
 
-            var _size = this._mapSize;
+            var grid = new Rect(new Point(this._mapSize, this._mapSize), this._mapSize);
 
-            // top left
-            var tl = new Point(0, 0);
-            this.setValue(tl, Math.random());
+            this.setValue(grid.topLeft, Math.random());
+            this.setValue(grid.bottomLeft, Math.random());
+            this.setValue(grid.topRight, Math.random());
+            this.setValue(grid.bottomRight, Math.random());
 
-            // bottom left
-            var bl = new Point(0, _size);
-            this.setValue(bl, Math.random());
-
-            // top right
-            var tr = new Point(_size, 0);
-            this.setValue(tr, Math.random());
-
-            // bottom right
-            var br = new Point(_size, _size);
-            this.setValue(br, Math.random());
-
-            // center
-            var center = new Point(_size / 2, _size / 2);
-            this.setValue(center, this.getAverage([tl, bl, tr, br]));
-
-            this.setValue(new Point(_size / 2, _size), this.getAverage([bl, br, center]));
-            this.setValue(new Point(_size / 2, 0), this.getAverage([tl, tr, center]));
-            this.setValue(new Point(_size, _size / 2), this.getAverage([tr, br, center]));
-            this.setValue(new Point(0, _size / 2), this.getAverage([tl, bl, center]));
+            this.applySquare(grid, this._mapSize);
+            this.applyDiamond(grid, this._mapSize);
         }
 
         private applySquare(cell: Rect, size: number): void {
@@ -254,10 +233,11 @@
         private applyDiamond(cell: Rect, size: number): void {
 
             var points = [
-                { target: cell.topCentre,    sources: [cell.topLeft, cell.topRight, cell.center] },
+
+                { target: cell.topCentre,    sources: [cell.topLeft,    cell.topRight,    cell.center] },
                 { target: cell.bottomCentre, sources: [cell.bottomLeft, cell.bottomRight, cell.center] },
-                { target: cell.rightCentre,  sources: [cell.topRight, cell.bottomRight, cell.center] },
-                { target: cell.leftCentre,   sources: [cell.topLeft, cell.bottomLeft, cell.center] }
+                { target: cell.rightCentre,  sources: [cell.topRight,   cell.bottomRight, cell.center] },
+                { target: cell.leftCentre,   sources: [cell.topLeft,    cell.bottomLeft,  cell.center] }
             ];
 
             points.forEach(p => this.setDisplacementValue(p.target, this.getAverage(p.sources), size));
@@ -326,7 +306,7 @@
                     var cell = this.getValue(new Point(x, y));
                     if (cell) {
 
-                        context.fillStyle = this.getStyle(cell);
+                        context.fillStyle = this.getTerrainStyle(cell);
                         context.fillRect(x * cellSize, y * cellSize, cellSize + 1, cellSize + 1);
                     }
                 }
