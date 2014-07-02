@@ -165,9 +165,9 @@
         private getTerrainStyle(altitude: number): string {
 
             var water = 0.32 + (this._water / 100);
-            var sand  = water + 0.03;
-            var grass = 0.85;
-            var mtn   = 0.95;
+            var sand  = water + 0.02;
+            var grass = 0.89;
+            var mtn   = 0.97;
 
             var colorFill: Color;
             
