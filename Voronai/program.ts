@@ -5,6 +5,7 @@ class Program {
     private static _size: HTMLInputElement;
     private static _roughness: HTMLInputElement;
     private static _smooth: HTMLInputElement;
+    private static _wrap: HTMLInputElement;
     private static _level: HTMLInputElement;
 
     private static reload() {
@@ -16,7 +17,8 @@ class Program {
             parseInt(this._size.value),
             1,
             parseInt(this._roughness.value),
-            this._smooth.value == "checked",
+            this._smooth.checked,
+            this._wrap.checked,
             parseInt(this._level.value)
         );
     }
@@ -37,6 +39,7 @@ class Program {
         this._size      = this.getElement<HTMLInputElement>('size');
         this._roughness = this.getElement<HTMLInputElement>('roughness');
         this._smooth    = this.getElement<HTMLInputElement>('smooth');
+        this._wrap      = this.getElement<HTMLInputElement>('wrap');
         this._level     = this.getElement<HTMLInputElement>('level');
 
         //this._voronai = new VoronaiGenerator("content", 80, 160);

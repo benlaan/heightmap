@@ -75,9 +75,10 @@
         private _data: Float64Array;
         private _element: HTMLCanvasElement;
 
+        private _wrap : boolean;
         private _colorMap;
 
-        constructor(element: string, size: number, unitSize: number, roughness: number, smoothing: boolean, water: number) {
+        constructor(element: string, size: number, unitSize: number, roughness: number, smoothing: boolean, wrap: boolean, water: number) {
 
             this._colorMap = {
 
@@ -103,6 +104,7 @@
 
             this._data = new Float64Array(size * size);
 
+            this._wrap = wrap;
             this._mapSize = size;
 
             this.initialiseCorners();
@@ -121,7 +123,10 @@
 
         private getValue(point: Point): number {
 
-            return this._data[this.getIndex(point)];
+            var x = this._wrap && point.X == this._mapSize ? 0 : point.X;
+            var y = this._wrap && point.Y == this._mapSize ? 0 : point.Y;
+
+            return this._data[this.getIndex(new Point(x, y))];
         }
 
         private clamp(value: number): number {
@@ -212,10 +217,13 @@
 
             var grid = new Rect(new Point(this._mapSize, this._mapSize), this._mapSize);
 
-            this.setValue(grid.topLeft, Math.random());
-            this.setValue(grid.bottomLeft, Math.random());
-            this.setValue(grid.topRight, Math.random());
-            this.setValue(grid.bottomRight, Math.random());
+            var tl = Math.random();
+            var tr = Math.random();
+ 
+            this.setValue(grid.topLeft, tl);
+            this.setValue(grid.bottomLeft, tr);
+            this.setValue(grid.topRight, this._wrap ? tl : Math.random());
+            this.setValue(grid.bottomRight, this._wrap ? tl : Math.random());
 
             this.applySquare(grid, this._mapSize);
             this.applyDiamond(grid, this._mapSize);
