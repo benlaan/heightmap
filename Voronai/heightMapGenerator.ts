@@ -1,26 +1,45 @@
 ﻿module Laan.Generators {
 
-    interface Color {
+    interface ColorMap { 
+
+        step: number;
+        start: Color;
+        end: Color;
+    }
+
+    class Color {
+
+        constructor(r: number, g: number, b: number) {
+
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
 
         r: number;
         g: number;
         b: number;
+
+        public toFillStyle(): string {
+
+            return "rgb(" + this.r + ", " + this.g + ", " + this.b + ")";
+        }
     }
 
     class Point {
 
         constructor(x: number, y: number) {
 
-            this.X = x;
-            this.Y = y;
+            this.x = x;
+            this.y = y;
         }
 
-        X: number;
-        Y: number;
+        x: number;
+        y: number;
 
         public toString(): string {
 
-            return [this.X, this.Y].join(":");
+            return [this.x, this.y].join(":");
         }
     }
 
@@ -28,14 +47,14 @@
 
         constructor(bottomRight: Point, size: number) {
 
-            var leftX = bottomRight.X - size;
-            var topY = bottomRight.Y - size;
+            var leftX = bottomRight.x - size;
+            var topY = bottomRight.y - size;
 
             this.topLeft = new Point(leftX, topY);
-            this.topRight = new Point(bottomRight.X, topY);
-            this.bottomLeft = new Point(leftX, bottomRight.Y);
-            this.bottomRight = new Point(bottomRight.X, bottomRight.Y);
-            this.center = new Point(bottomRight.X - (size / 2), bottomRight.Y - (size / 2));
+            this.topRight = new Point(bottomRight.x, topY);
+            this.bottomLeft = new Point(leftX, bottomRight.y);
+            this.bottomRight = new Point(bottomRight.x, bottomRight.y);
+            this.center = new Point(bottomRight.x - (size / 2), bottomRight.y - (size / 2));
         }
 
         topLeft: Point;
@@ -46,22 +65,22 @@
 
         get topCentre(): Point {
 
-            return new Point((this.topRight.X + this.topLeft.X) / 2, this.topLeft.Y);
+            return new Point((this.topRight.x + this.topLeft.x) / 2, this.topLeft.y);
         }
 
         get rightCentre(): Point {
 
-            return new Point(this.topRight.X, (this.bottomRight.Y + this.topRight.Y) / 2);
+            return new Point(this.topRight.x, (this.bottomRight.y + this.topRight.y) / 2);
         }
 
         get bottomCentre(): Point {
 
-            return new Point((this.topRight.X + this.topLeft.X) / 2, this.bottomLeft.Y);
+            return new Point((this.topRight.x + this.topLeft.x) / 2, this.bottomLeft.y);
         }
 
         get leftCentre(): Point {
 
-            return new Point(this.topLeft.X, (this.bottomLeft.Y + this.topLeft.Y) / 2);
+            return new Point(this.topLeft.x, (this.bottomLeft.y + this.topLeft.y) / 2);
         }
     }
 
@@ -70,32 +89,16 @@
         private _unitSize: number;
         private _roughness: number;
         private _water: number;
+        private _wrap : boolean;
 
         private _mapSize: number;
         private _data: Float64Array;
         private _element: HTMLCanvasElement;
 
-        private _wrap : boolean;
-        private _colorMap;
+        private _colorMap: ColorMap[];
 
         constructor(element: string, size: number, unitSize: number, roughness: number, smoothing: boolean, wrap: boolean, water: number) {
 
-            this._colorMap = {
-
-                waterStart: { r:  39, g:  50, b:  63 },
-                waterEnd:   { r:  10, g:  20, b:  40 },
-                sandStart:  { r:  98, g: 105, b:  83 },
-                sandEnd:    { r: 189, g: 189, b: 144 },
-                grassStart: { r:  67, g: 140, b:  18 },
-                grassEnd:   { r:  22, g:  68, b:   3 },
-                mtnEnd:     { r:  67, g:  80, b:  18 },
-                mtnStart:   { r:  60, g:  56, b:  31 },
-                rockStart:  { r: 130, g: 130, b: 130 },
-                rockEnd:    { r:  90, g:  90, b:  90 },
-                snowStart:  { r: 200, g: 200, b: 200 },
-                snowEnd:    { r: 255, g: 255, b: 255 }
-            }
-            
             this._element = <HTMLCanvasElement>document.getElementById('content');
 
             this._unitSize = unitSize;
@@ -107,6 +110,8 @@
             this._wrap = wrap;
             this._mapSize = size;
 
+
+            this.defineColorMap();
             this.initialiseCorners();
             this.midpointDisplacment(size);
 
@@ -116,28 +121,60 @@
             this.draw();
         }
 
+        private defineColorMap():void {
+
+            var water = 0.32 + (this._water / 100);
+
+            this._colorMap = [
+                {
+                    step: water,
+                    start: new Color(39, 50, 63),
+                    end:   new Color(10, 20, 40)
+                },
+                {
+                    step: water + 0.05,
+                    start: new Color(98, 105, 83),
+                    end:   new Color(189, 189, 144)
+                },
+                { 
+                    step: 0.89,
+                    start: new Color(67, 140, 18),
+                    end:   new Color(22, 68, 3)
+                },
+                { 
+                    step: 0.97,
+                    start: new Color(67, 80, 18),
+                    end:   new Color(60, 56, 31)
+                },
+                { 
+                    step: 0.992,
+                    start: new Color(130, 130, 130),
+                    end:   new Color(90, 90, 90)
+                },
+                {
+                    step: 1,
+                    start: new Color(200, 200, 200),
+                    end:   new Color(255, 255, 255)
+                }
+            ];
+        }
+
         private getIndex(point: Point): number {
 
-            return point.X * this._mapSize + point.Y;
+            return point.x * this._mapSize + point.y;
         }
 
         private getValue(point: Point): number {
 
-            var x = this._wrap && point.X == this._mapSize ? 0 : point.X;
-            var y = this._wrap && point.Y == this._mapSize ? 0 : point.Y;
+            var x = this._wrap && point.x == this._mapSize ? 0 : point.x;
+            var y = this._wrap && point.y == this._mapSize ? 0 : point.y;
 
             return this._data[this.getIndex(new Point(x, y))];
         }
 
         private clamp(value: number): number {
 
-            if (value > 1)
-                return 1;
-
-            if (value < 0)
-                return 0;
-
-            return value;
+            return value > 1 ? 1 : (value < 0 ? 0 : value);
         }
 
         private setValue(point: Point, value: number): void {
@@ -158,46 +195,39 @@
             this.setValue(point, value + displacement);
         }
 
-        private fade(colorStart: Color, colorEnd: Color, totalSteps: number, step: number) : Color {
+        private fade(map: ColorMap, previousStep: number, altitude: number) : Color {
 
-            var r = Math.floor(colorEnd.r + (~~ ((colorStart.r - colorEnd.r) / totalSteps) * step));
-            var g = Math.floor(colorEnd.g + (~~ ((colorStart.g - colorEnd.g) / totalSteps) * step));
-            var b = Math.floor(colorEnd.b + (~~ ((colorStart.b - colorEnd.b) / totalSteps) * step));
+            var level = map.step - previousStep;
+            var range = altitude - previousStep;
 
-            return { r: r, g: g, b: b };
+            var r = Math.floor(map.end.r + (~~ ((map.start.r - map.end.r) / level) * range));
+            var g = Math.floor(map.end.g + (~~ ((map.start.g - map.end.g) / level) * range));
+            var b = Math.floor(map.end.b + (~~ ((map.start.b - map.end.b) / level) * range));
+
+            return new Color(r, g, b);
         }
 
-        private getTerrainStyle(altitude: number): string {
+        private getColor(altitude: number): Color {
 
-            var water = 0.32 + (this._water / 100);
-            var sand  = water + 0.02;
-            var grass = 0.89;
-            var mtn   = 0.97;
+            var last = 0;
+            for (var i in this._colorMap) {
 
-            var colorFill: Color;
-            
-            if (altitude >= 0 && altitude <= water) {
+                var c = this._colorMap[i];
 
-                colorFill = this.fade(this._colorMap.waterStart, this._colorMap.waterEnd, water, altitude);
-            } 
-            else if (altitude > water && altitude <= sand) {
+                if (altitude > last && altitude <= c.step)
+                    return this.fade(c, last, altitude);
 
-                colorFill = this.fade(this._colorMap.sandStart, this._colorMap.sandEnd, sand - water, altitude - water);
-            } 
-            else if (altitude > sand && altitude <= grass) {
-            
-                colorFill = this.fade(this._colorMap.grassStart, this._colorMap.grassEnd, grass - sand, altitude - sand);
-            }
-            else if (altitude > grass && altitude <= mtn) {
-            
-                colorFill = this.fade(this._colorMap.mtnStart, this._colorMap.mtnEnd, mtn - grass, altitude - grass);
-            }
-            else if (altitude > mtn && altitude <= 1) {
-            
-                colorFill = this.fade(this._colorMap.rockStart, this._colorMap.rockEnd, 1 - mtn, altitude - mtn);
-            }
+                last = c.step;
+            };
 
-            return "rgb(" + colorFill.r + ", " + colorFill.g + ", " + colorFill.b + ")"
+            console.log(altitude);
+            console.log(this._colorMap);
+            debugger;
+
+            throw "!"
+            return null;
+            //var lastColor = this._colorMap[this._colorMap.length - 1];
+            //return this.fade(lastColor, last, altitude);
         }
 
         private getAverage(points: Point[]): number {
@@ -306,7 +336,6 @@
             var cellSize = this._element.width / this._mapSize;
 
             context.clearRect(0, 0, this._element.width, this._element.height);
-
             for (var y = 0; y < this._mapSize; y++) {
 
                 for (var x = 0; x < this._mapSize; x++) {
@@ -314,7 +343,7 @@
                     var cell = this.getValue(new Point(x, y));
                     if (cell) {
 
-                        context.fillStyle = this.getTerrainStyle(cell);
+                        context.fillStyle = this.getColor(cell).toFillStyle();
                         context.fillRect(x * cellSize, y * cellSize, cellSize + 1, cellSize + 1);
                     }
                 }
