@@ -1,6 +1,6 @@
 ﻿module Laan.Generators {
 
-    interface ColorMap { 
+    interface ColorMap {
 
         step: number;
         start: Color;
@@ -9,16 +9,16 @@
 
     class Color {
 
+        r: number;
+        g: number;
+        b: number;
+
         constructor(r: number, g: number, b: number) {
 
             this.r = r;
             this.g = g;
             this.b = b;
         }
-
-        r: number;
-        g: number;
-        b: number;
 
         public toFillStyle(): string {
 
@@ -45,6 +45,12 @@
 
     class Rect {
 
+        topLeft: Point;
+        topRight: Point;
+        bottomLeft: Point;
+        bottomRight: Point;
+        center: Point;
+
         constructor(bottomRight: Point, size: number) {
 
             var leftX = bottomRight.x - size;
@@ -56,12 +62,6 @@
             this.bottomRight = new Point(bottomRight.x, bottomRight.y);
             this.center = new Point(bottomRight.x - (size / 2), bottomRight.y - (size / 2));
         }
-
-        topLeft: Point;
-        topRight: Point;
-        bottomLeft: Point;
-        bottomRight: Point;
-        center: Point;
 
         get topCentre(): Point {
 
@@ -93,13 +93,13 @@
 
         private _mapSize: number;
         private _data: Float64Array;
-        private _element: HTMLCanvasElement;
+        private _element: HTMLImageElement;
 
         private _colorMap: ColorMap[];
 
         constructor(element: string, size: number, unitSize: number, roughness: number, smoothing: boolean, wrap: boolean, water: number) {
 
-            this._element = <HTMLCanvasElement>document.getElementById('content');
+            this._element = <HTMLImageElement>document.getElementById('content');
 
             this._unitSize = unitSize;
             this._roughness = roughness;
@@ -136,17 +136,17 @@
                     start: new Color(98, 105, 83),
                     end:   new Color(189, 189, 144)
                 },
-                { 
+                {
                     step: 0.89,
                     start: new Color(67, 140, 18),
                     end:   new Color(22, 68, 3)
                 },
-                { 
+                {
                     step: 0.97,
                     start: new Color(67, 80, 18),
                     end:   new Color(60, 56, 31)
                 },
-                { 
+                {
                     step: 0.992,
                     start: new Color(130, 130, 130),
                     end:   new Color(90, 90, 90)
@@ -161,13 +161,13 @@
 
         private getIndex(point: Point): number {
 
-            return point.x * this._mapSize + point.y;
+            return point.y * this._mapSize + point.x;
         }
 
         private getValue(point: Point): number {
 
-            var x = this._wrap && point.x == this._mapSize ? 0 : point.x;
-            var y = this._wrap && point.y == this._mapSize ? 0 : point.y;
+            var x = this._wrap && point.x === this._mapSize ? 0 : point.x;
+            var y = point.y;
 
             return this._data[this.getIndex(new Point(x, y))];
         }
@@ -209,7 +209,10 @@
 
         private getColor(altitude: number): Color {
 
-            var last = 0;
+//            var color = altitude * 255;
+//            return new Color(color, color, color);
+
+            var last = -1;
             for (var i in this._colorMap) {
 
                 var c = this._colorMap[i];
@@ -218,27 +221,20 @@
                     return this.fade(c, last, altitude);
 
                 last = c.step;
-            };
+            }
 
-            console.log(altitude);
-            console.log(this._colorMap);
-            debugger;
-
-            throw "!"
             return null;
-            //var lastColor = this._colorMap[this._colorMap.length - 1];
-            //return this.fade(lastColor, last, altitude);
         }
 
         private getAverage(points: Point[]): number {
 
-            if (points.length == 0)
+            if (points.length === 0)
                 return 0;
 
             var total = points
                 .map(p => this.getValue(p))
                 .filter(p => p !== undefined)
-                .reduce((pv, pc) => pv + pc, 0)
+                .reduce((pv, pc) => pv + pc, 0);
 
             return total / points.length;
         }
@@ -332,22 +328,59 @@
 
         private draw(): void {
 
-            var context = this._element.getContext("2d");
-            var cellSize = this._element.width / this._mapSize;
+            var canvas = <HTMLCanvasElement>document.createElement("canvas");
+            canvas.height = this._mapSize;
+            canvas.width = this._mapSize;
 
-            context.clearRect(0, 0, this._element.width, this._element.height);
+            var context = canvas.getContext("2d");
+            var img = context.createImageData(this._mapSize, this._mapSize);
+            var imgData = img.data;
+
             for (var y = 0; y < this._mapSize; y++) {
 
                 for (var x = 0; x < this._mapSize; x++) {
 
-                    var cell = this.getValue(new Point(x, y));
-                    if (cell) {
+                    var point = new Point(x, y);
+                    var cell = this.getValue(point) || 0;
 
-                        context.fillStyle = this.getColor(cell).toFillStyle();
-                        context.fillRect(x * cellSize, y * cellSize, cellSize + 1, cellSize + 1);
+                    if (cell >= 0) {
+
+                        var colorFill = this.getColor(cell);
+                        var offset = this.getIndex(point) * 4;
+
+                        imgData[offset] = colorFill.r;
+                        imgData[offset + 1] = colorFill.g;
+                        imgData[offset + 2] = colorFill.b;
+                        imgData[offset + 3] = 255;
                     }
                 }
             }
+
+            var parameters = <HTMLDivElement>document.getElementById("parameters");
+
+             // *magic* numbers!!
+            var height = window.innerHeight - parameters.offsetHeight - 50;
+            var width = window.innerWidth - 40;
+
+            var size = Math.min(height, width / 2);
+
+            context.putImageData(img, 0, 0, 0, 0, this._mapSize, this._mapSize);
+            var png = canvas.toDataURL("image/png");
+
+            this._element.src = png;
+            this._element.height = height;
+            this._element.width = width / 2;
+
+            var content2 = <HTMLImageElement>document.getElementById("content2");
+            if(this._wrap) {
+
+                var content2 = <HTMLImageElement>document.getElementById("content2");
+                content2.height = height;
+                content2.width = width / 2;
+                content2.src = png;
+            }
+            else
+                content2.src = "";
         }
     }
 }

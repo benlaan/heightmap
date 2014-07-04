@@ -16,15 +16,15 @@
 
         <span>
             <label>Size</label>
-            <input type="text" id="size" value="256" />
+            <input type="text" id="size" value="512" />
         </span>
         <span>
             <label>Roughness</label>
-            <input type="text" id="roughness" value="5" title="Land mass detail level - low is flatter, smoother, higher is more mountainous. Range is 0 to 20" />
+            <input type="text" id="roughness" value="8" title="Land mass detail level - low is flatter, smoother, higher is more mountainous. Range is 0 to 20" />
         </span>
         <span>
             <label>Water</label>
-            <input type="text" id="level" value="0" title="Perecentage difference from the normal (30%) water level. Range is -20 to 40" />
+            <input type="text" id="level" value="25" title="Perecentage difference from the normal (30%) water level. Range is -20 to 40" />
         </span>
         <span>
             <label>Smooth</label>
@@ -37,7 +37,13 @@
         <span>
             <input type="button" id="refresh" value="Refresh" />
         </span>
+        <span>
+            <label id="duration" />
+        </span>
     </div>
-    <canvas id="content" style="margin-top: 20px"></canvas>
+    <div style="float:left">
+        <img id="content" />
+        <img id="content2" />
+    </div>
 </body>
 </html>

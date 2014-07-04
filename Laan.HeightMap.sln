@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voronai", "Voronai\Voronai.csproj", "{937BA3A2-A627-4FDF-AB03-9BBE94FEB942}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laan.HeightMap", "Voronai\Laan.HeightMap.csproj", "{937BA3A2-A627-4FDF-AB03-9BBE94FEB942}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
